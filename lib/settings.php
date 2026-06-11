@@ -41,7 +41,7 @@ class Settings
     {
         $settings = self::all();
         foreach ($data as $key => $value) {
-            if ($value !== null && $value !== '') {
+            if ($value !== null) {
                 $settings[$key] = $value;
             }
         }

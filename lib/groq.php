@@ -15,14 +15,7 @@ class GroqClient
 
     public function generatePost(string $topic): array
     {
-        $prompt = $this->buildPrompt($topic);
-
-        $data = [
-            'model' => $this->model,
-            'messages' => [
-                [
-                    'role' => 'system',
-                    'content' => 'Eres un copywriter experto en tecnología y marketing B2B. 
+        $systemPrompt = COPY_SYSTEM_PROMPT ?: 'Eres un copywriter experto en tecnología y marketing B2B. 
 Escribes posts para LinkedIn de un desarrollador de software a medida que también integra IA en negocios.
 Tu objetivo es generar leads y conseguir clientes.
 Cada post debe:
@@ -33,8 +26,14 @@ Cada post debe:
 - NO usar emojis
 - Entre 200 y 400 palabras
 - Ser profesional pero cercano
-- Incluir 5 hashtags relevantes al final'
+- Incluir 5 hashtags relevantes al final';
 
+        $data = [
+            'model' => $this->model,
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => $systemPrompt,
                 ],
                 [
                     'role' => 'user',
@@ -70,19 +69,22 @@ LOS HASHTAGS VAN AL FINAL después de una línea en blanco."
 
     public function generateImagePrompt(string $copy): string
     {
+        $stylePrompt = IMAGE_STYLE_PROMPT ?: 'fotografía profesional, iluminación cinematográfica, fondo oscuro con neones azules y morados';
+        $systemPrompt = "Eres un experto en generar prompts para generación de imágenes.
+Recibes el texto de un post de LinkedIn sobre tecnología y debes crear un prompt que represente visualmente el CONTENIDO EXACTO del post.
+Reglas:
+- El prompt debe ilustrar directamente lo que el post describe
+- Máximo 150 caracteres
+- Prompt en inglés
+- Estilo: {$stylePrompt}
+- Solo responde con el prompt, nada más.";
+
         $data = [
             'model' => $this->model,
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => 'Eres un experto en generar prompts para generación de imágenes.
-Recibes el texto de un post de LinkedIn sobre tecnología y debes crear un prompt que represente visualmente el CONTENIDO EXACTO del post.
-Reglas:
-- El prompt debe ilustrar directamente lo que el post describe (ej: si habla de cloud computing, servidores en la nube; si habla de chatbots, un chatbot en pantalla)
-- Máximo 150 caracteres
-- Prompt en inglés
-- Estilo: fotografía profesional, iluminación cinematográfica, fondo oscuro con neones azules y morados
-- Solo responde con el prompt, nada más.'
+                    'content' => $systemPrompt,
                 ],
                 [
                     'role' => 'user',
