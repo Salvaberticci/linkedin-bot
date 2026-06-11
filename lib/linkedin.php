@@ -48,7 +48,7 @@ class LinkedInClient
             ]
         );
 
-        $uploadUrl = $registerResponse['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl'] ?? null;
+        $uploadUrl = $registerResponse['value']['uploadUrl'] ?? $registerResponse['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl'] ?? null;
         $imageUrn = $registerResponse['value']['image'] ?? null;
 
         if (!$uploadUrl || !$imageUrn) {
