@@ -8,6 +8,10 @@ require_once __DIR__ . '/lib/settings.php';
 $action = $_GET['action'] ?? '';
 $logFile = LOGS_PATH;
 
+if (!defined('AUTO_POST_TIME')) {
+    define('AUTO_POST_TIME', Settings::get('AUTO_POST_TIME', '09:00'));
+}
+
 // Handle force post
 if ($action === 'generate') {
     header('Content-Type: text/plain; charset=utf-8');
