@@ -18,23 +18,97 @@ if (!defined('IMAGE_STYLE_PROMPT')) {
 $action = $_GET['action'] ?? '';
 $tab = $_GET['tab'] ?? 'dashboard';
 
-// Handle force post
-if ($action === 'generate') {
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "=== Generando post forzado ===\n\n";
+// Handle generate or retry — capture output and show styled result
+if ($action === 'generate' || ($action === 'retry' && !empty($_GET['topic']))) {
+    ob_start();
     putenv('FORCE_GENERATE=1');
+    $label = 'Generando post forzado';
+    if ($action === 'retry') {
+        putenv('TOPIC_OVERRIDE=' . $_GET['topic']);
+        $label = 'Reintentando post fallido — ' . $_GET['topic'];
+    }
     require __DIR__ . '/index.php';
-    exit;
-}
+    $output = ob_get_clean();
 
-// Handle retry failed post
-if ($action === 'retry' && !empty($_GET['topic'])) {
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "=== Reintentando post fallido ===\n\n";
-    echo "Tópico: " . $_GET['topic'] . "\n\n";
-    putenv('FORCE_GENERATE=1');
-    putenv('TOPIC_OVERRIDE=' . $_GET['topic']);
-    require __DIR__ . '/index.php';
+    $success = strpos($output, 'Post publicado exitosamente') !== false;
+    $postUrl = '';
+    if (preg_match('/Post publicado: (https?:\/\/[^\s]+)/', $output, $m)) {
+        $postUrl = $m[1];
+    }
+    $errorMsg = '';
+    if (!$success && preg_match('/\[ERROR\] (.+)/', $output, $m)) {
+        $errorMsg = $m[1];
+    }
+    ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LinkedIn Bot — Resultado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.container{max-width:780px;width:100%}
+.terminal{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px 24px;font-family:'SF Mono','Fira Code','Cascadia Code',monospace;font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:60vh;overflow-y:auto;margin-bottom:24px}
+.terminal .ok{color:#3fb950}
+.terminal .info{color:#58a6ff}
+.terminal .error{color:#f85149}
+.notification{position:fixed;top:24px;right:24px;padding:16px 24px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:1000;animation:slideIn .4s;display:flex;align-items:center;gap:10px}
+.notification.success{background:#1a3a2a;color:#3fb950;border:1px solid #238636}
+.notification.error{background:#3a1a1a;color:#f85149;border:1px solid #da3633}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}}
+.notification .icon{font-size:20px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;text-decoration:none;transition:.15s}
+.btn-primary{background:#238636;color:#fff}
+.btn-primary:hover{background:#2ea043}
+.btn-outline{background:transparent;border:1px solid #30363d;color:#e6edf3}
+.btn-outline:hover{background:#21262d}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <span style="font-size:24px"><?= $success ? '✅' : '❌' ?></span>
+    <h2 style="font-size:18px;font-weight:600"><?= $success ? 'Post publicado' : 'Error al publicar' ?></h2>
+  </div>
+  <div class="terminal"><?php
+    $lines = explode("\n", htmlspecialchars($output));
+    foreach ($lines as $line) {
+        if (preg_match('/^\[OK\]/', $line)) echo '<span class="ok">' . $line . "</span>\n";
+        elseif (preg_match('/^\[ERROR\]/', $line)) echo '<span class="error">' . $line . "</span>\n";
+        elseif (preg_match('/^\[INFO\]/', $line)) echo '<span class="info">' . $line . "</span>\n";
+        else echo $line . "\n";
+    }
+  ?></div>
+  <div class="actions">
+    <a href="?tab=dashboard" class="btn btn-primary">← Volver al Dashboard</a>
+    <?php if ($postUrl): ?>
+    <a href="<?= htmlspecialchars($postUrl) ?>" target="_blank" class="btn btn-outline">🔗 Ver en LinkedIn</a>
+    <?php endif; ?>
+  </div>
+</div>
+
+<div class="notification <?= $success ? 'success' : 'error' ?>" id="notif">
+  <span class="icon"><?= $success ? '✅' : '❌' ?></span>
+  <span><?= $success ? 'Post publicado correctamente' : htmlspecialchars($errorMsg ?: 'Error al publicar') ?></span>
+</div>
+
+<script>
+setTimeout(function(){
+  var n = document.getElementById('notif');
+  n.style.transition = 'transform .4s, opacity .4s';
+  n.style.transform = 'translateX(120%)';
+  n.style.opacity = '0';
+  setTimeout(function(){ n.remove(); }, 500);
+}, 5000);
+</script>
+</body>
+</html>
+    <?php
     exit;
 }
 
