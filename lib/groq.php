@@ -68,7 +68,7 @@ LOS HASHTAGS VAN AL FINAL después de una línea en blanco."
         ];
     }
 
-    public function generateImagePrompt(string $topic): string
+    public function generateImagePrompt(string $copy): string
     {
         $data = [
             'model' => $this->model,
@@ -76,25 +76,27 @@ LOS HASHTAGS VAN AL FINAL después de una línea en blanco."
                 [
                     'role' => 'system',
                     'content' => 'Eres un experto en generar prompts para generación de imágenes.
-Crea un prompt descriptivo en inglés para generar una imagen profesional y moderna 
-relacionada con tecnología, software, IA o negocios digitales.
-El prompt debe ser apto para Pollinations.ai (Stable Diffusion).
-Máximo 200 caracteres.
-Solo responde con el prompt, nada más.'
+Recibes el texto de un post de LinkedIn sobre tecnología y debes crear un prompt que represente visualmente el CONTENIDO EXACTO del post.
+Reglas:
+- El prompt debe ilustrar directamente lo que el post describe (ej: si habla de cloud computing, servidores en la nube; si habla de chatbots, un chatbot en pantalla)
+- Máximo 150 caracteres
+- Prompt en inglés
+- Estilo: fotografía profesional, iluminación cinematográfica, fondo oscuro con neones azules y morados
+- Solo responde con el prompt, nada más.'
                 ],
                 [
                     'role' => 'user',
-                    'content' => "Genera un prompt para una imagen sobre: {$topic}. Estilo profesional, moderno, tech."
+                    'content' => "Crea un prompt de imagen que represente EXACTAMENTE este contenido:\n\n" . substr($copy, 0, 500)
                 ]
             ],
-            'temperature' => 0.6,
+            'temperature' => 0.5,
             'max_tokens' => 150,
         ];
 
         $response = $this->callApi($data);
 
         if (!isset($response['choices'][0]['message']['content'])) {
-            return "Modern technology abstract background, digital transformation concept, professional business style, clean design";
+            return "Modern server room with cloud computing infrastructure, blue LED lights, professional tech environment";
         }
 
         return trim($response['choices'][0]['message']['content']);

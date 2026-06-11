@@ -55,7 +55,7 @@ class LinkedInBot
             echo "[OK] Copy generado.\n";
 
             echo "[INFO] Generando prompt para imagen...\n";
-            $imagePrompt = $this->groq->generateImagePrompt($topic);
+            $imagePrompt = $this->groq->generateImagePrompt($post['text']);
             echo "[OK] Prompt: {$imagePrompt}\n";
 
             echo "[INFO] Generando imagen con Hugging Face...\n";
