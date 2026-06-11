@@ -1,4 +1,5 @@
 config.php
+settings.json
 auth/tokens.json
 assets/*
 !assets/.gitkeep

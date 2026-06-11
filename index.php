@@ -28,7 +28,7 @@ class LinkedInBot
         $this->linkedin = new LinkedInClient();
     }
 
-    public function run(): void
+    public function run(bool $force = false): void
     {
         $today = new DateTime();
         $dayOfWeek = (int)$today->format('w');
@@ -37,9 +37,13 @@ class LinkedInBot
         $log = $this->loadLog();
         $todayStr = $today->format('Y-m-d');
 
-        if ($this->alreadyPostedToday($log, $todayStr)) {
+        if (!$force && $this->alreadyPostedToday($log, $todayStr)) {
             echo "[INFO] Ya se publicó un post hoy ({$todayStr}). Saliendo.\n";
             return;
+        }
+
+        if ($force) {
+            echo "[INFO] Modo forzado: generando post aunque ya haya uno hoy.\n";
         }
 
         if (!$this->topicAvailableToday($log, $topic)) {
@@ -172,5 +176,6 @@ class LinkedInBot
     }
 }
 
+$force = in_array('--force', $argv ?? []);
 $bot = new LinkedInBot();
-$bot->run();
+$bot->run($force);
