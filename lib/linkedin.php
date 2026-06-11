@@ -99,7 +99,6 @@ class LinkedInClient
             'content' => [
                 'media' => [
                     'id' => $mediaUrn,
-                    'mediaType' => 'image/jpeg',
                 ],
             ],
         ];
