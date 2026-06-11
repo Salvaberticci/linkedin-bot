@@ -109,7 +109,13 @@ class LinkedInClient
             $postData
         );
 
-        return $response['id'] ?? 'unknown';
+        $postId = $response['id'] ?? '';
+        if ($postId) {
+            $parts = explode(':', $postId);
+            $postId = end($parts);
+        }
+
+        return $postId ?: 'unknown';
     }
 
     private function loadTokens(): void
