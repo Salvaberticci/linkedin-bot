@@ -6,6 +6,7 @@ class LinkedInClient
 {
     private string $accessToken;
     private string $memberId;
+    private string $apiVersion = '202601';
 
     public function __construct()
     {
@@ -22,7 +23,7 @@ class LinkedInClient
         $mediaUrn = $this->uploadImage($imagePath);
 
         echo "[INFO] Publicando post en LinkedIn...\n";
-        $postId = $this->createUgcPost($commentary, $mediaUrn);
+        $postId = $this->createPost($commentary, $mediaUrn);
 
         return [
             'success' => true,
@@ -39,25 +40,18 @@ class LinkedInClient
 
         $registerResponse = $this->callApi(
             'POST',
-            'https://api.linkedin.com/v2/assets?action=registerUpload',
+            'https://api.linkedin.com/rest/images?action=initializeUpload',
             [
-                'registerUploadRequest' => [
-                    'recipes' => ['urn:li:digitalmediaRecipe:feedshare-image'],
-                    'owner' => "urn:li:member:{$this->memberId}",
-                    'serviceRelationships' => [
-                        [
-                            'relationshipType' => 'OWNER',
-                            'identifier' => 'urn:li:userGeneratedContent',
-                        ],
-                    ],
+                'initializeUploadRequest' => [
+                    'owner' => "urn:li:person:{$this->memberId}",
                 ],
             ]
         );
 
         $uploadUrl = $registerResponse['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl'] ?? null;
-        $assetUrn = $registerResponse['value']['asset'] ?? null;
+        $imageUrn = $registerResponse['value']['image'] ?? null;
 
-        if (!$uploadUrl || !$assetUrn) {
+        if (!$uploadUrl || !$imageUrn) {
             throw new Exception("Error al registrar la imagen: " . json_encode($registerResponse));
         }
 
@@ -73,7 +67,7 @@ class LinkedInClient
             CURLOPT_POSTFIELDS => $imageData,
             CURLOPT_HTTPHEADER => [
                 "Authorization: Bearer {$this->accessToken}",
-                'Content-Type: image/png',
+                'Content-Type: image/jpeg',
             ],
             CURLOPT_TIMEOUT => 60,
             CURLOPT_SSL_VERIFYPEER => false,
@@ -86,65 +80,37 @@ class LinkedInClient
             throw new Exception("Error al subir imagen a LinkedIn (HTTP {$httpCode}): {$uploadResponse}");
         }
 
-        return $assetUrn;
+        return $imageUrn;
     }
 
-    private function createUgcPost(string $commentary, string $mediaUrn): string
+    private function createPost(string $commentary, string $mediaUrn): string
     {
         $postData = [
-            'author' => "urn:li:member:{$this->memberId}",
-            'lifecycleState' => 'PUBLISHED',
-            'specificContent' => [
-                'com.linkedin.ugc.ShareContent' => [
-                    'shareCommentary' => [
-                        'text' => $commentary,
-                    ],
-                    'shareMediaCategory' => 'IMAGE',
-                    'media' => [
-                        [
-                            'status' => 'READY',
-                            'description' => [
-                                'text' => 'Imagen generada por IA',
-                            ],
-                            'media' => $mediaUrn,
-                            'title' => [
-                                'text' => 'Post',
-                            ],
-                        ],
-                    ],
-                ],
+            'author' => "urn:li:person:{$this->memberId}",
+            'commentary' => $commentary,
+            'visibility' => 'PUBLIC',
+            'distribution' => [
+                'feedDistribution' => 'MAIN_FEED',
+                'targetEntities' => [],
+                'thirdPartyDistributionChannels' => [],
             ],
-            'visibility' => [
-                'com.linkedin.ugc.MemberNetworkVisibility' => 'PUBLIC',
+            'lifecycleState' => 'PUBLISHED',
+            'isReshareDisabledByAuthor' => false,
+            'content' => [
+                'media' => [
+                    'id' => $mediaUrn,
+                    'mediaType' => 'image/jpeg',
+                ],
             ],
         ];
 
         $response = $this->callApi(
             'POST',
-            'https://api.linkedin.com/v2/ugcPosts',
+            'https://api.linkedin.com/rest/posts',
             $postData
         );
 
         return $response['id'] ?? 'unknown';
-    }
-
-    public function fetchMemberId(): string
-    {
-        $response = $this->callApi(
-            'GET',
-            'https://api.linkedin.com/v2/me'
-        );
-
-        if (isset($response['sub'])) {
-            return $response['sub'];
-        }
-
-        throw new Exception(
-            "No se pudo obtener tu member ID automáticamente. " .
-            "El token no tiene permisos de lectura (r_liteprofile).\n" .
-            "Agrega manualmente tu member ID en auth/tokens.json como 'member_id'.\n" .
-            "Para obtenerlo: ve a tu perfil de LinkedIn → Ver código fuente → busca 'memberId'"
-        );
     }
 
     private function loadTokens(): void
@@ -152,7 +118,7 @@ class LinkedInClient
         if (!file_exists(TOKENS_PATH)) {
             throw new Exception(
                 "No se encontró auth/tokens.json.\n" .
-                "Abre en tu navegador: auth/linkedin-callback.php para autenticarte."
+                "Abre auth/linkedin-callback.php en tu navegador para autenticarte."
             );
         }
 
@@ -168,12 +134,13 @@ class LinkedInClient
             );
         }
 
-        $this->memberId = $tokens['member_id'] ?? $tokens['person_id'] ?? '';
+        $this->memberId = $tokens['member_id'] ?? '';
 
         if (empty($this->memberId)) {
-            $this->memberId = $this->fetchMemberId();
-            $tokens['member_id'] = $this->memberId;
-            file_put_contents(TOKENS_PATH, json_encode($tokens, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            throw new Exception(
+                "member_id no encontrado en tokens.json.\n" .
+                "Re-autentica en auth/linkedin-callback.php"
+            );
         }
     }
 
@@ -183,7 +150,7 @@ class LinkedInClient
         $headers = [
             "Authorization: Bearer {$this->accessToken}",
             'Content-Type: application/json',
-            'X-Restli-Protocol-Version: 2.0.0',
+            "LinkedIn-Version: {$this->apiVersion}",
         ];
 
         $options = [
