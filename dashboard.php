@@ -53,8 +53,13 @@ foreach ($log as $entry) {
     }
 }
 
-$totalPosts = count(array_filter($log, fn($e) => ($e['status'] ?? '') === 'success'));
-$failedPosts = count(array_filter($log, fn($e) => ($e['status'] ?? '') === 'failed'));
+$totalPosts = 0;
+$failedPosts = 0;
+foreach ($log as $e) {
+    $s = $e['status'] ?? '';
+    if ($s === 'success') $totalPosts++;
+    if ($s === 'failed') $failedPosts++;
+}
 
 $nextPostTime = date('Y-m-d') . ' ' . AUTO_POST_TIME . ':00';
 $nextPost = new DateTime($nextPostTime);

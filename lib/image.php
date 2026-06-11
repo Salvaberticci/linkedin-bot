@@ -40,12 +40,13 @@ class ImageGenerator
         $mime = finfo_buffer($finfo, $data);
         finfo_close($finfo);
 
-        return match ($mime) {
-            'image/png' => 'png',
-            'image/jpeg', 'image/jpg' => 'jpg',
-            'image/webp' => 'webp',
-            default => 'png',
-        };
+        switch ($mime) {
+            case 'image/png': return 'png';
+            case 'image/jpeg':
+            case 'image/jpg': return 'jpg';
+            case 'image/webp': return 'webp';
+            default: return 'png';
+        }
     }
 
     private function callHuggingFace(string $prompt): string
