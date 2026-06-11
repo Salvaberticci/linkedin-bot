@@ -1,0 +1,23 @@
+[
+    {
+        "date": "2026-06-11",
+        "time": "12:29:16",
+        "topic": "Integración de inteligencia artificial en sistemas legacy",
+        "status": "failed",
+        "error": "Error al descargar imagen de Pollinations.ai (HTTP 402)"
+    },
+    {
+        "date": "2026-06-11",
+        "time": "12:34:07",
+        "topic": "Por qué tu negocio necesita una app personalizada",
+        "status": "failed",
+        "error": "Hugging Face API error (HTTP 0): "
+    },
+    {
+        "date": "2026-06-11",
+        "time": "12:35:19",
+        "topic": "Bases de datos: optimización y rendimiento empresarial",
+        "status": "failed",
+        "error": "LinkedIn API error (HTTP 403): Field Value validation failed in REQUEST_BODY: Data Processing Exception while processing fields [\/author]"
+    }
+]
