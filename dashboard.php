@@ -187,6 +187,7 @@ $defaultImageStyle = 'fotografía profesional, iluminación cinematográfica, fo
 <title>LinkedIn Bot — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -221,9 +222,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* ─── MAIN ─── */
 .main{flex:1;max-width:1200px;margin:0 auto;padding:24px;width:100%}
-
-.alert{padding:12px 20px;border-radius:var(--radius-sm);margin-bottom:20px;font-size:14px;display:flex;align-items:center;gap:10px}
-.alert-success{background:#e8f5e9;color:var(--green);border:1px solid #c8e6c9}
 
 /* ─── STATS GRID ─── */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
@@ -346,7 +344,9 @@ tr:last-child td{border-bottom:none}
 
 <main class="main">
 <?php if (isset($saved)): ?>
-<div class="alert alert-success">✓ Configuración guardada correctamente.</div>
+<script>
+Swal.fire({ icon:'success', title:'Configuración guardada', text:'Los cambios se aplican inmediatamente.', toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true });
+</script>
 <?php endif; ?>
 
 <!-- ═══════════ DASHBOARD ═══════════ -->
@@ -378,7 +378,7 @@ tr:last-child td{border-bottom:none}
     <p><?= $postedToday ? 'Ya hay un post hoy. El botón forzará otro.' : 'Genera un nuevo post ahora mismo.' ?></p>
   </div>
   <div class="btn-group">
-    <a href="?action=generate" class="btn btn-primary" onclick="return confirm('¿Generar post ahora?')">
+    <a href="?action=generate" class="btn btn-primary" data-confirm="¿Generar post ahora?">
       <?= $postedToday ? '🔄 Forzar otro post' : '🚀 Generar post' ?>
     </a>
     <a href="<?= LINKEDIN_REDIRECT_URI ?>" class="btn btn-outline" target="_blank">🔑 Renovar token</a>
@@ -417,7 +417,7 @@ tr:last-child td{border-bottom:none}
       </div>
       <div style="display:flex;align-items:center;gap:6px">
         <?php if ($status === 'failed' && !empty($entry['topic'])): ?>
-        <a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" onclick="event.stopPropagation();return confirm('¿Reintentar este post fallido?')">Reintentar</a>
+        <a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" data-confirm="¿Reintentar este post fallido?" data-stop-prop="1">Reintentar</a>
         <?php endif; ?>
         <span style="font-size:12px;color:var(--primary);font-weight:500">Ver más →</span>
       </div>
@@ -453,7 +453,7 @@ tr:last-child td{border-bottom:none}
   <td><span class="tag tag-<?= $status ?>"><?= $status ?></span></td>
   <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--red)"><?= htmlspecialchars(substr($entry['error']??'',0,80)) ?></td>
   <td><?php if(!empty($entry['linkedin_url'])&&$entry['linkedin_url']!=='https://www.linkedin.com/feed/update/unknown'):?><a href="<?= htmlspecialchars($entry['linkedin_url'])?>" target="_blank" style="font-size:13px">Abrir</a><?php else:?>—<?php endif;?></td>
-  <td><?php if ($status === 'failed' && !empty($entry['topic'])):?><a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Reintentar este post?')">Reintentar</a><?php else:?>—<?php endif;?></td>
+  <td><?php if ($status === 'failed' && !empty($entry['topic'])):?><a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" data-confirm="¿Reintentar este post?">Reintentar</a><?php else:?>—<?php endif;?></td>
 </tr>
 <?php endforeach; if(empty($logReversed)):?><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary)">No hay posts en el historial.</td></tr><?php endif;?>
 </tbody>
@@ -512,6 +512,7 @@ tr:last-child td{border-bottom:none}
     <div class="form-group">
       <label>Zona horaria (Timezone)</label>
       <input type="text" name="TIMEZONE" value="<?= htmlspecialchars($settings['TIMEZONE'] ?? TIMEZONE) ?>">
+      <small style="color:var(--text-secondary)">Ej: America/Caracas, America/Mexico_City, etc.</small>
     </div>
     <div class="form-group">
       <label>Hora de publicación (HH:MM)</label>
@@ -633,6 +634,22 @@ function openModal(entry,imgUrl){
 }
 function closeModal(){modal.classList.remove('open')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+document.querySelectorAll('[data-confirm]').forEach(function(el){
+  el.addEventListener('click',function(e){
+    e.preventDefault();
+    if(el.getAttribute('data-stop-prop')) e.stopPropagation();
+    var url=this.href;
+    Swal.fire({
+      title:el.getAttribute('data-confirm'),
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'Sí',
+      cancelButtonText:'Cancelar',
+      confirmButtonColor:'#0a66c2',
+    }).then(function(r){if(r.isConfirmed) window.location.href=url});
+  });
+});
 </script>
 </body>
 </html>
