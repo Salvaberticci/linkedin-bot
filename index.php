@@ -58,7 +58,7 @@ class LinkedInBot
             $imagePrompt = $this->groq->generateImagePrompt($topic);
             echo "[OK] Prompt: {$imagePrompt}\n";
 
-            echo "[INFO] Generando imagen con Pollinations.ai...\n";
+            echo "[INFO] Generando imagen con Hugging Face...\n";
             $imagePath = $this->imageGen->generate($imagePrompt);
             echo "[OK] Imagen guardada en: {$imagePath}\n";
 

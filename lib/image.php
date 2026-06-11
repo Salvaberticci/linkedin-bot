@@ -15,6 +15,10 @@ class ImageGenerator
 
     public function generate(string $prompt): string
     {
+        if (!is_dir(ASSETS_PATH)) {
+            mkdir(ASSETS_PATH, 0755, true);
+        }
+
         $imageData = $this->callHuggingFace($prompt);
 
         $ext = $this->detectImageExtension($imageData);
