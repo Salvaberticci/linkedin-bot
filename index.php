@@ -176,6 +176,6 @@ class LinkedInBot
     }
 }
 
-$force = in_array('--force', $argv ?? []);
+$force = in_array('--force', $argv ?? []) || getenv('FORCE_GENERATE') === '1';
 $bot = new LinkedInBot();
 $bot->run($force);
