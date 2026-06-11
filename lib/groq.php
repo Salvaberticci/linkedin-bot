@@ -28,6 +28,17 @@ Cada post debe:
 - Ser profesional pero cercano
 - Incluir 5 hashtags relevantes al final';
 
+        $context = '';
+        if (defined('ABOUT_ME') && ABOUT_ME) {
+            $context .= "\n\nInformación sobre el autor (úsala para personalizar el post):\n" . ABOUT_ME;
+        }
+        if (defined('SUCCESS_STORIES') && SUCCESS_STORIES) {
+            $context .= "\n\nCasos de éxito que puedes mencionar si aplican al tema:\n" . SUCCESS_STORIES;
+        }
+        if ($context) {
+            $systemPrompt .= "\n\n---\n" . $context;
+        }
+
         $data = [
             'model' => $this->model,
             'messages' => [

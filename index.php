@@ -33,7 +33,8 @@ class LinkedInBot
         $today = new DateTime();
         $dayOfWeek = (int)$today->format('w');
 
-        $topic = $this->topics[$dayOfWeek];
+        $topicOverride = getenv('TOPIC_OVERRIDE');
+        $topic = $topicOverride ?: $this->topics[$dayOfWeek];
         $log = $this->loadLog();
         $todayStr = $today->format('Y-m-d');
 
@@ -46,7 +47,7 @@ class LinkedInBot
             echo "[INFO] Modo forzado: generando post aunque ya haya uno hoy.\n";
         }
 
-        if (!$this->topicAvailableToday($log, $topic)) {
+        if (!$topicOverride && !$this->topicAvailableToday($log, $topic)) {
             echo "[INFO] El tema de hoy ya fue usado recientemente. Usando tema alternativo.\n";
             $topic = $this->getAlternativeTopic($log);
         }

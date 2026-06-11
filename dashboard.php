@@ -27,6 +27,17 @@ if ($action === 'generate') {
     exit;
 }
 
+// Handle retry failed post
+if ($action === 'retry' && !empty($_GET['topic'])) {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "=== Reintentando post fallido ===\n\n";
+    echo "Tópico: " . $_GET['topic'] . "\n\n";
+    putenv('FORCE_GENERATE=1');
+    putenv('TOPIC_OVERRIDE=' . $_GET['topic']);
+    require __DIR__ . '/index.php';
+    exit;
+}
+
 // Handle save settings
 if ($action === 'save-settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $allowed = [
@@ -35,6 +46,7 @@ if ($action === 'save-settings' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'HF_API_TOKEN', 'HF_MODEL',
         'TIMEZONE', 'AUTO_POST_TIME',
         'COPY_SYSTEM_PROMPT', 'IMAGE_STYLE_PROMPT',
+        'ABOUT_ME', 'SUCCESS_STORIES',
     ];
     $data = [];
     foreach ($allowed as $key) {
@@ -329,7 +341,12 @@ tr:last-child td{border-bottom:none}
           <?php endforeach; ?>
         <?php endif; ?>
       </div>
-      <span style="font-size:12px;color:var(--primary);font-weight:500">Ver más →</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <?php if ($status === 'failed' && !empty($entry['topic'])): ?>
+        <a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" onclick="event.stopPropagation();return confirm('¿Reintentar este post fallido?')">Reintentar</a>
+        <?php endif; ?>
+        <span style="font-size:12px;color:var(--primary);font-weight:500">Ver más →</span>
+      </div>
     </div>
   </div>
 </div>
@@ -350,7 +367,7 @@ tr:last-child td{border-bottom:none}
 <div class="table-wrap">
 <table>
 <thead><tr>
-  <th>#</th><th>Fecha</th><th>Tema</th><th>Copy</th><th>Estado</th><th>Error</th><th>Link</th>
+  <th>#</th><th>Fecha</th><th>Tema</th><th>Copy</th><th>Estado</th><th>Error</th><th>Link</th><th>Acción</th>
 </tr></thead>
 <tbody>
 <?php foreach ($logReversed as $i=>$entry): $status=$entry['status']??''; ?>
@@ -362,8 +379,9 @@ tr:last-child td{border-bottom:none}
   <td><span class="tag tag-<?= $status ?>"><?= $status ?></span></td>
   <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--red)"><?= htmlspecialchars(substr($entry['error']??'',0,80)) ?></td>
   <td><?php if(!empty($entry['linkedin_url'])&&$entry['linkedin_url']!=='https://www.linkedin.com/feed/update/unknown'):?><a href="<?= htmlspecialchars($entry['linkedin_url'])?>" target="_blank" style="font-size:13px">Abrir</a><?php else:?>—<?php endif;?></td>
+  <td><?php if ($status === 'failed' && !empty($entry['topic'])):?><a href="?action=retry&topic=<?= urlencode($entry['topic']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Reintentar este post?')">Reintentar</a><?php else:?>—<?php endif;?></td>
 </tr>
-<?php endforeach; if(empty($logReversed)):?><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-secondary)">No hay posts en el historial.</td></tr><?php endif;?>
+<?php endforeach; if(empty($logReversed)):?><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary)">No hay posts en el historial.</td></tr><?php endif;?>
 </tbody>
 </table>
 </div>
@@ -442,6 +460,24 @@ tr:last-child td{border-bottom:none}
     <div class="form-group">
       <textarea name="IMAGE_STYLE_PROMPT" rows="4" oninput="this.nextElementSibling.textContent=this.value.length"><?= htmlspecialchars($settings['IMAGE_STYLE_PROMPT'] ?: $defaultImageStyle) ?></textarea>
       <div class="char-count"><?= strlen($settings['IMAGE_STYLE_PROMPT'] ?: $defaultImageStyle) ?> caracteres</div>
+    </div>
+  </div>
+
+  <div class="settings-section" style="grid-column:1/-1">
+    <h3>👤 Sobre mí</h3>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">Describe quién eres, tu experiencia y qué servicios ofreces. Groq usará esta información para personalizar los posts.</p>
+    <div class="form-group">
+      <textarea name="ABOUT_ME" rows="6" oninput="this.nextElementSibling.textContent=this.value.length"><?= htmlspecialchars($settings['ABOUT_ME'] ?? '') ?></textarea>
+      <div class="char-count"><?= strlen($settings['ABOUT_ME'] ?? '') ?> caracteres</div>
+    </div>
+  </div>
+
+  <div class="settings-section" style="grid-column:1/-1">
+    <h3>🏆 Casos de éxito</h3>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">Describe clientes reales, proyectos y resultados. Groq los usará como referencia en los posts cuando aplique al tema.</p>
+    <div class="form-group">
+      <textarea name="SUCCESS_STORIES" rows="6" oninput="this.nextElementSibling.textContent=this.value.length"><?= htmlspecialchars($settings['SUCCESS_STORIES'] ?? '') ?></textarea>
+      <div class="char-count"><?= strlen($settings['SUCCESS_STORIES'] ?? '') ?> caracteres</div>
     </div>
   </div>
 
