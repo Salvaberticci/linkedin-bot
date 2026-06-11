@@ -471,11 +471,11 @@ tr:last-child td{border-bottom:none}
     <h3>🤖 Groq API</h3>
     <div class="form-group">
       <label>API Key</label>
-      <input type="text" name="GROQ_API_KEY" value="<?= htmlspecialchars($settings['GROQ_API_KEY']??'') ?>">
+      <input type="text" name="GROQ_API_KEY" value="<?= htmlspecialchars($settings['GROQ_API_KEY'] ?? GROQ_API_KEY) ?>">
     </div>
     <div class="form-group">
       <label>Modelo</label>
-      <input type="text" name="GROQ_MODEL" value="<?= htmlspecialchars($settings['GROQ_MODEL']??'llama-3.3-70b-versatile') ?>">
+      <input type="text" name="GROQ_MODEL" value="<?= htmlspecialchars($settings['GROQ_MODEL'] ?? GROQ_MODEL) ?>">
     </div>
   </div>
 
@@ -483,11 +483,11 @@ tr:last-child td{border-bottom:none}
     <h3>🖼️ Hugging Face</h3>
     <div class="form-group">
       <label>API Token</label>
-      <input type="text" name="HF_API_TOKEN" value="<?= htmlspecialchars($settings['HF_API_TOKEN']??'') ?>">
+      <input type="text" name="HF_API_TOKEN" value="<?= htmlspecialchars($settings['HF_API_TOKEN'] ?? HF_API_TOKEN) ?>">
     </div>
     <div class="form-group">
       <label>Modelo</label>
-      <input type="text" name="HF_MODEL" value="<?= htmlspecialchars($settings['HF_MODEL']??'black-forest-labs/FLUX.1-schnell') ?>">
+      <input type="text" name="HF_MODEL" value="<?= htmlspecialchars($settings['HF_MODEL'] ?? HF_MODEL) ?>">
     </div>
   </div>
 
@@ -495,15 +495,15 @@ tr:last-child td{border-bottom:none}
     <h3>🔗 LinkedIn API</h3>
     <div class="form-group">
       <label>Client ID</label>
-      <input type="text" name="LINKEDIN_CLIENT_ID" value="<?= htmlspecialchars($settings['LINKEDIN_CLIENT_ID']??'') ?>">
+      <input type="text" name="LINKEDIN_CLIENT_ID" value="<?= htmlspecialchars($settings['LINKEDIN_CLIENT_ID'] ?? LINKEDIN_CLIENT_ID) ?>">
     </div>
     <div class="form-group">
       <label>Client Secret</label>
-      <input type="text" name="LINKEDIN_CLIENT_SECRET" value="<?= htmlspecialchars($settings['LINKEDIN_CLIENT_SECRET']??'') ?>">
+      <input type="text" name="LINKEDIN_CLIENT_SECRET" value="<?= htmlspecialchars($settings['LINKEDIN_CLIENT_SECRET'] ?? LINKEDIN_CLIENT_SECRET) ?>">
     </div>
     <div class="form-group">
       <label>Redirect URI</label>
-      <input type="text" name="LINKEDIN_REDIRECT_URI" value="<?= htmlspecialchars($settings['LINKEDIN_REDIRECT_URI']??'') ?>">
+      <input type="text" name="LINKEDIN_REDIRECT_URI" value="<?= htmlspecialchars($settings['LINKEDIN_REDIRECT_URI'] ?? LINKEDIN_REDIRECT_URI) ?>">
     </div>
   </div>
 
@@ -511,11 +511,11 @@ tr:last-child td{border-bottom:none}
     <h3>⏰ Horario</h3>
     <div class="form-group">
       <label>Zona horaria (Timezone)</label>
-      <input type="text" name="TIMEZONE" value="<?= htmlspecialchars($settings['TIMEZONE']??'America/Mexico_City') ?>">
+      <input type="text" name="TIMEZONE" value="<?= htmlspecialchars($settings['TIMEZONE'] ?? TIMEZONE) ?>">
     </div>
     <div class="form-group">
       <label>Hora de publicación (HH:MM)</label>
-      <input type="text" name="AUTO_POST_TIME" value="<?= htmlspecialchars($settings['AUTO_POST_TIME']??'09:00') ?>">
+      <input type="text" name="AUTO_POST_TIME" value="<?= htmlspecialchars($settings['AUTO_POST_TIME'] ?? AUTO_POST_TIME) ?>">
     </div>
   </div>
 
