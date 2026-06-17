@@ -80,6 +80,7 @@ class LinkedInBot
                 'time' => $today->format('H:i:s'),
                 'topic' => $topic,
                 'copy_preview' => substr($post['text'], 0, 150) . '...',
+                'copy_full' => $post['text'],
                 'hashtags' => $post['hashtags'],
                 'image_path' => $imagePath,
                 'linkedin_post_id' => $result['post_id'],

@@ -456,7 +456,7 @@ Swal.fire({ icon:'success', title:'Configuración guardada', text:'Los cambios s
   <td><?= $i+1 ?></td>
   <td><?= htmlspecialchars($entry['date']??'') ?><br><small style="color:var(--text-secondary)"><?= htmlspecialchars($entry['time']??'') ?></small></td>
   <td><?= htmlspecialchars($entry['topic']??'—') ?></td>
-  <td class="copy-cell" title="<?= htmlspecialchars($entry['copy_preview']??'') ?>"><?= htmlspecialchars(substr($entry['copy_preview']??'',0,120)) ?></td>
+  <td class="copy-cell" title="<?= htmlspecialchars($entry['copy_full']??$entry['copy_preview']??'') ?>"><?= htmlspecialchars(substr($entry['copy_preview']??'',0,120)) ?></td>
   <td><span class="tag tag-<?= $status ?>"><?= $status ?></span></td>
   <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--red)"><?= htmlspecialchars(substr($entry['error']??'',0,80)) ?></td>
   <td><?php if(!empty($entry['linkedin_url'])&&$entry['linkedin_url']!=='https://www.linkedin.com/feed/update/unknown'):?><a href="<?= htmlspecialchars($entry['linkedin_url'])?>" target="_blank" style="font-size:13px">Abrir</a><?php else:?>—<?php endif;?></td>
@@ -643,7 +643,7 @@ function openModal(entry,imgUrl){
     <span>📅 ${entry.date||''} ${entry.time||''}</span>
     <span>📊 ${entry.status||'?'}</span>
   `;
-  modalText.textContent=entry.copy_preview||'Sin contenido';
+  modalText.textContent=entry.copy_full||entry.copy_preview||'Sin contenido';
   if(entry.error) modalText.textContent+='\n\n❌ Error: '+entry.error;
 
   if(imgUrl){modalImg.src=imgUrl;modalImg.style.display='block'}
