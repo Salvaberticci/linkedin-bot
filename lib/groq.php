@@ -15,18 +15,31 @@ class GroqClient
 
     public function generatePost(string $topic): array
     {
-        $systemPrompt = COPY_SYSTEM_PROMPT ?: 'Eres un copywriter experto en tecnología y marketing B2B. 
-Escribes posts para LinkedIn de un desarrollador de software a medida que también integra IA en negocios.
-Tu objetivo es generar leads y conseguir clientes.
-Cada post debe:
-- Tener un gancho atractivo en las primeras 2 líneas
-- Mostrar autoridad en el tema
-- Incluir un problema real que resuelve el software a medida o la IA
-- Terminar con un Call to Action (ej: "¿Necesitas algo similar? Escríbeme")
+        $systemPrompt = COPY_SYSTEM_PROMPT ?: 'Eres un copywriter experto en tecnología y marketing B2B. Escribes posts para LinkedIn de un desarrollador de software a medida que también integra IA en negocios. Tu objetivo es generar leads y conseguir clientes.
+
+Debes seguir EXACTAMENTE esta estructura en CADA post:
+
+1. HOOK — Primeras 2 líneas. Debe detener el scroll. Usa opinión contraria, resultado, error o curiosidad. No explica, no vende, solo genera curiosidad.
+
+2. CONTEXTO — 3-4 líneas. Por qué llegaste a esa conclusión. Historia corta, solo la parte necesaria.
+
+3. PROBLEMA REAL — 2-3 líneas. Describe la causa, no el síntoma. Ej: "La gente no vende porque habla de sí misma todo el tiempo."
+
+4. INSIGHT — 2-3 líneas. La idea que cambia la forma de pensar. Debe provocar: "Nunca lo había visto así."
+
+5. DESARROLLO DEL INSIGHT — 4-6 líneas. Defiende la idea con razonamiento, no opiniones.
+
+6. EVIDENCIA — 2-4 líneas. Prueba personal, de cliente, numérica u observacional. Demuestra que no estás filosofando.
+
+7. CONCLUSIÓN — 2-3 líneas. Frase memorable que condensa todo.
+
+8. CTA CONVERSACIÓN — Una pregunta final. NADA de "agenda una llamada" o "escríbeme por DM". Usa "¿Te pasó algo parecido?", "¿Estás de acuerdo o pensás distinto?" o "¿Cómo manejan esto en sus empresas?"
+
+REGLAS ESTRICTAS:
 - NO usar emojis
 - Entre 200 y 400 palabras
-- Ser profesional pero cercano
-- Incluir 5 hashtags relevantes al final';
+- Tono profesional pero cercano
+- Incluir 5 hashtags relevantes al final después de una línea en blanco';
 
         $context = '';
         if (defined('ABOUT_ME') && ABOUT_ME) {
@@ -50,12 +63,13 @@ Cada post debe:
                     'role' => 'user',
                     'content' => "Genera un post de LinkedIn sobre: {$topic}. 
 El post debe estar orientado a conseguir clientes para un desarrollador de software a medida e integración de IA.
-Incluye un CTA claro al final.
+Debes seguir EXACTAMENTE la estructura del sistema: Hook, Contexto, Problema, Insight, Desarrollo, Evidencia, Conclusión, CTA conversacional.
+El CTA debe ser una pregunta, nunca un \"agenda una llamada\" o \"escríbeme\".
 LOS HASHTAGS VAN AL FINAL después de una línea en blanco.
-Debes seguir las instrucciones del sistema al pie de la letra. Si hay información del autor o casos de éxito, incorpóralos obligatoriamente en el post."
+Si hay información del autor o casos de éxito, incorpóralos obligatoriamente."
                 ]
             ],
-            'temperature' => 0.4,
+            'temperature' => 0.25,
             'max_tokens' => 800,
         ];
 
@@ -69,7 +83,7 @@ Debes seguir las instrucciones del sistema al pie de la letra. Si hay informaci�
 
         $hashtags = $this->extractHashtags($fullContent);
 
-        $cleanText = preg_replace('/#\w+/', '', $fullContent);
+        $cleanText = preg_replace('/#\S+/', '', $fullContent);
         $cleanText = trim(preg_replace('/\n{3,}/', "\n\n", $cleanText));
 
         return [
@@ -123,7 +137,7 @@ Reglas:
 
     private function extractHashtags(string $text): array
     {
-        preg_match_all('/#(\w+)/', $text, $matches);
+        preg_match_all('/#(\S+)/', $text, $matches);
         return $matches[0] ?? [];
     }
 
