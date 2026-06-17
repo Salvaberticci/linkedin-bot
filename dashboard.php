@@ -18,12 +18,18 @@ if (!defined('IMAGE_STYLE_PROMPT')) {
 $action = $_GET['action'] ?? '';
 $tab = $_GET['tab'] ?? 'dashboard';
 
-// Handle generate or retry — capture output and show styled result
-if ($action === 'generate' || ($action === 'retry' && !empty($_GET['topic']))) {
+// Handle generate, custom, or retry — capture output and show styled result
+if ($action === 'generate' || $action === 'custom' || ($action === 'retry' && !empty($_GET['topic']))) {
     ob_start();
     putenv('FORCE_GENERATE=1');
     $label = 'Generando post forzado';
-    if ($action === 'retry') {
+    if ($action === 'custom') {
+        $topic = trim($_GET['topic'] ?? '');
+        if ($topic) {
+            putenv('TOPIC_OVERRIDE=' . $topic);
+        }
+        $label = 'Generando post personalizado' . ($topic ? " — {$topic}" : '');
+    } elseif ($action === 'retry') {
         putenv('TOPIC_OVERRIDE=' . $_GET['topic']);
         $label = 'Reintentando post fallido — ' . $_GET['topic'];
     }
@@ -381,6 +387,7 @@ Swal.fire({ icon:'success', title:'Configuración guardada', text:'Los cambios s
     <a href="?action=generate" class="btn btn-primary" data-confirm="¿Generar post ahora?">
       <?= $postedToday ? '🔄 Forzar otro post' : '🚀 Generar post' ?>
     </a>
+    <a href="#" class="btn btn-outline" onclick="openCustomModal();return false">✍️ Post personalizado</a>
     <a href="<?= LINKEDIN_REDIRECT_URI ?>" class="btn btn-outline" target="_blank">🔑 Renovar token</a>
   </div>
 </div>
@@ -580,7 +587,33 @@ Swal.fire({ icon:'success', title:'Configuración guardada', text:'Los cambios s
 </main>
 </div>
 
-<!-- ═══════════ MODAL ═══════════ -->
+<!-- ═══════════ MODAL: POST PERSONALIZADO ═══════════ -->
+<div class="modal-overlay" id="customModal" onclick="if(event.target===this)closeCustomModal()">
+<div class="modal" style="max-width:500px">
+  <button class="modal-close" onclick="closeCustomModal()">&times;</button>
+  <div class="modal-body">
+    <h2 style="margin-bottom:16px">✍️ Crear post personalizado</h2>
+    <form id="customPostForm" method="get" action="">
+      <input type="hidden" name="action" value="custom">
+      <div class="form-group">
+        <label for="topicInput">Tema del post</label>
+        <input type="text" id="topicInput" name="topic" placeholder="Ej: Automatización de facturación con IA" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--font)">
+        <small style="color:var(--text-secondary)">Déjalo vacío para usar el tema automático del día</small>
+      </div>
+      <div style="margin:16px 0;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="forceCheck" name="force" value="1" checked style="width:18px;height:18px;accent-color:var(--primary)">
+        <label for="forceCheck" style="font-size:14px;font-weight:500">Forzar publicación (ignora si ya hay un post hoy)</label>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" onclick="closeCustomModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">🚀 Generar post</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ MODAL: DETALLE DEL POST ═══════════ -->
 <div class="modal-overlay" id="postModal" onclick="if(event.target===this)closeModal()">
 <div class="modal">
   <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -650,6 +683,10 @@ document.querySelectorAll('[data-confirm]').forEach(function(el){
     }).then(function(r){if(r.isConfirmed) window.location.href=url});
   });
 });
+
+function openCustomModal(){document.getElementById('customModal').classList.add('open')}
+function closeCustomModal(){document.getElementById('customModal').classList.remove('open')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeCustomModal()});
 </script>
 </body>
 </html>

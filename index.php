@@ -177,6 +177,8 @@ class LinkedInBot
     }
 }
 
-$force = in_array('--force', $argv ?? []) || getenv('FORCE_GENERATE') === '1';
-$bot = new LinkedInBot();
-$bot->run($force);
+if (php_sapi_name() === 'cli' || !defined('CRON_RUN')) {
+    $force = in_array('--force', $argv ?? []) || getenv('FORCE_GENERATE') === '1';
+    $bot = new LinkedInBot();
+    $bot->run($force);
+}

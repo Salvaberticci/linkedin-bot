@@ -30,10 +30,10 @@ Cada post debe:
 
         $context = '';
         if (defined('ABOUT_ME') && ABOUT_ME) {
-            $context .= "\n\nInformación sobre el autor (úsala para personalizar el post):\n" . ABOUT_ME;
+            $context .= "\n\nInformación del autor (DEBES usarla para personalizar el post):\n" . ABOUT_ME;
         }
         if (defined('SUCCESS_STORIES') && SUCCESS_STORIES) {
-            $context .= "\n\nCasos de éxito que puedes mencionar si aplican al tema:\n" . SUCCESS_STORIES;
+            $context .= "\n\nCasos de éxito (DEBES mencionar al menos uno relevante al tema):\n" . SUCCESS_STORIES;
         }
         if ($context) {
             $systemPrompt .= "\n\n---\n" . $context;
@@ -51,10 +51,11 @@ Cada post debe:
                     'content' => "Genera un post de LinkedIn sobre: {$topic}. 
 El post debe estar orientado a conseguir clientes para un desarrollador de software a medida e integración de IA.
 Incluye un CTA claro al final.
-LOS HASHTAGS VAN AL FINAL después de una línea en blanco."
+LOS HASHTAGS VAN AL FINAL después de una línea en blanco.
+Debes seguir las instrucciones del sistema al pie de la letra. Si hay información del autor o casos de éxito, incorpóralos obligatoriamente en el post."
                 ]
             ],
-            'temperature' => 0.8,
+            'temperature' => 0.4,
             'max_tokens' => 800,
         ];
 
