@@ -10,7 +10,7 @@
 // para configurar todo desde la web.
 
 define('GROQ_API_KEY', '');
-define('GROQ_MODEL', 'llama-3.3-70b-versatile');
+define('GROQ_MODEL', 'llama3-70b-8192');
 
 define('LINKEDIN_CLIENT_ID', '');
 define('LINKEDIN_CLIENT_SECRET', '');
